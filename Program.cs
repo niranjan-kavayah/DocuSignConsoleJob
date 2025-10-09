@@ -190,8 +190,8 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
                 Console.WriteLine("***********************************************************************************************************************");
                 ClaimMaster claimMaster = new ClaimMaster(DBconnectionString);
                 await SaveReleaseSignedDocumentDataWithOffer(UniqueDocId, envelopeId);
-                var val =  await claimMaster.UploadDocumentTestAsync(envelopeOfferInfo.ClaimID ?? default(int), UniqueDocId, "Niranjan JOB");
-                await SaveReleaseSignedDocumentDataWithOfferToAggregator(val, envelopeId);
+                //var val =  await claimMaster.UploadDocumentTestAsync(envelopeOfferInfo.ClaimID ?? default(int), UniqueDocId, "Niranjan JOB");
+                //await SaveReleaseSignedDocumentDataWithOfferToAggregator(val, envelopeId);
 
             }
             return;
