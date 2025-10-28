@@ -9,6 +9,7 @@ using DocuSign.eSign.Model;
 using DocuSignConsoleApp.Enum;
 using DocuSignConsoleApp.Model;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Text.Json;
 using static Dapper.SqlMapper;
@@ -16,16 +17,23 @@ using static Dapper.SqlMapper;
 
 class Program
 {
-    public static string connectionString = "Data Source=10.100.240.41; Initial Catalog=ASB_PROD; Database=ASB_PROD; User Id=KavayahUser; Password=Kavayah!@#;Encrypt=false;TrustServerCertificate=true; Max Pool Size=40;Min Pool Size=2;Pooling=true;";
-    public static string DBconnectionString = "Data Source=FIRM-DB1-DEV; Initial Catalog=ASB_PROD; Database=ASB_PROD; User Id=KavayahUser; Password=Kavayah!@#;Encrypt=false;TrustServerCertificate=true; Max Pool Size=40;Min Pool Size=2;Pooling=true;";
-    static async Task Main()
+static async Task Main()
     {
-        ClaimMaster claimMaster = new ClaimMaster(DBconnectionString);
+        var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+        IConfigurationRoot configuration = builder.Build();
+
+        string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+        string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
+
+        ClaimMaster claimMaster = new ClaimMaster(DBconnectionString, netDocsEnvName);
 
         IEnumerable<string> envelopeIDs = await claimMaster.GetInCompleteStatusEnvelopesAsync();
 
         
-        DocusignService _docusignService = new DocusignService(DBconnectionString);
+        DocusignService _docusignService = new DocusignService(DBconnectionString, netDocsEnvName);
 
         if (envelopeIDs.Count() > 0) { 
             
@@ -69,7 +77,14 @@ static Task ErrorHandler(ProcessErrorEventArgs args)
     {
         try
         {
-            
+            var builder = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+
+            string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+            string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
             using (var connection = new SqlConnection(DBconnectionString))
             {
                 connection.Open();
@@ -96,9 +111,16 @@ static Task ErrorHandler(ProcessErrorEventArgs args)
     
 static async Task SyncDataBaseEnvelope(Envelope envelope)
     {
-        try { 
-        
-        using (var connection = new SqlConnection(DBconnectionString))
+        try {
+            var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+
+            string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+            string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
+            using (var connection = new SqlConnection(DBconnectionString))
         {
             connection.Open();
             DynamicParameters dynamicParameters = new();
@@ -130,6 +152,14 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
     try
     {
             List<EnvelopeInformation> envelopeInformations = new List<EnvelopeInformation>();
+            var builder = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+
+            string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+            string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
             using (var connection = new SqlConnection(DBconnectionString))
         {
             connection.Open();
@@ -168,7 +198,14 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
     {
         try
         {
-            
+            var builder = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+
+            string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+            string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
             IEnumerable<EnvelopeOfferClientInfo> envelopeOfferClientInfo = await GetEnvelopeOfferInfo(envelopeId);
             Console.WriteLine($"Envelopes COunt Is  {envelopeOfferClientInfo.Count()}");
             foreach (EnvelopeOfferClientInfo envelopeOfferInfo in envelopeOfferClientInfo) {
@@ -208,6 +245,15 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
     {
         try
         {
+            var builder = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+
+            string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+            string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
+
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add("@P_EnvelopeID", EnvelopeID);
             dynamicParameters.Add("@P_SignedNetDocumentID", netDocID);
@@ -234,6 +280,14 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
     {
         try
         {
+            var builder = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+
+            string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+            string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add("@P_EnvelopeID", EnvelopeID);
             dynamicParameters.Add("@P_SignedAggDocumentID", aggDocID);
@@ -257,6 +311,14 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
 
     public static async Task<string> UploadReleaseToNetDocuments(Stream releaseDocument, int claimID, int trustRefID, string nDFolder = "Bankruptcy Release", string docName = "default")
     {
+        var builder = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+        IConfigurationRoot configuration = builder.Build();
+
+        string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+        string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
         var docService = new NetDocumentService(DBconnectionString);
         var uploadRequest = await GetNetDocumentMetadataAsync(claimID, trustRefID);
         using var tempMemoryStream = new MemoryStream();
@@ -274,6 +336,15 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
     {
         try
         {
+            var builder = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+
+            string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+            string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
+
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add("@P_EnvelopeID", EnvelopeID);
 
@@ -303,6 +374,15 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
     {
         try
         {
+            var builder = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+
+            string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+            string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
+
             DynamicParameters dynamicParameters = new();
             dynamicParameters.Add("@P_ClaimId", claimId);
             dynamicParameters.Add("@P_TrustRefID", trustRefID);

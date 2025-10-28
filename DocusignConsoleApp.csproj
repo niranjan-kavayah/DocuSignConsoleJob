@@ -12,6 +12,8 @@
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="DocuSign.eSign.dll" Version="8.2.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.10" />
     <PackageReference Include="Refit" Version="8.0.0" />
     <PackageReference Include="System.ServiceModel.Http" Version="8.1.2" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="8.1.2" />
@@ -19,8 +21,11 @@
 
   <ItemGroup>
     <Reference Include="BKClaimService">
-      <HintPath>E:\BKClaimService\BKClaimService\bin\Release\net9.0\BKClaimService.dll</HintPath>
+      <HintPath>..\BKClaimService\BKClaimService\bin\Release\net9.0\BKClaimService.dll</HintPath>
     </Reference>
   </ItemGroup>
+	<ItemGroup>
+		<None Update="appsettings*.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" ExcludeFromSingleFile="True" />
+	</ItemGroup>
 
 </Project>
