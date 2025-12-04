@@ -209,7 +209,7 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
             IEnumerable<EnvelopeOfferClientInfo> envelopeOfferClientInfo = await GetEnvelopeOfferInfo(envelopeId);
             Console.WriteLine($"Envelopes COunt Is  {envelopeOfferClientInfo.Count()}");
             foreach (EnvelopeOfferClientInfo envelopeOfferInfo in envelopeOfferClientInfo) {
-                DocusignService _docusignService = new DocusignService(DBconnectionString);
+                DocusignService _docusignService = new DocusignService(DBconnectionString, netDocsEnvName);
                 var envelopeDocumentsResult = await _docusignService.GetCompletedDocumentAsync(envelopeId);
                 if (envelopeDocumentsResult == null)
                 {
