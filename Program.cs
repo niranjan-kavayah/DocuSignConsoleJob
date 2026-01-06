@@ -29,7 +29,16 @@ static async Task Main()
         string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
 
         ClaimMaster claimMaster = new ClaimMaster(DBconnectionString, netDocsEnvName);
+        try
+        {
+            // Get OfferIDs to push docusign Request
+        }
+        catch (Exception)
+        {
 
+        }
+
+      
         IEnumerable<string> envelopeIDs = await claimMaster.GetInCompleteStatusEnvelopesAsync();
 
         
@@ -311,25 +320,32 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
 
     public static async Task<string> UploadReleaseToNetDocuments(Stream releaseDocument, int claimID, int trustRefID, string nDFolder = "Bankruptcy Release", string docName = "default")
     {
-        var builder = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+        try
+        {
+            var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-        IConfigurationRoot configuration = builder.Build();
+            IConfigurationRoot configuration = builder.Build();
 
-        string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
-        string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
-        var docService = new NetDocumentService(DBconnectionString);
-        var uploadRequest = await GetNetDocumentMetadataAsync(claimID, trustRefID);
-        using var tempMemoryStream = new MemoryStream();
-        await releaseDocument.CopyToAsync(tempMemoryStream);
+            string DBconnectionString = configuration.GetConnectionString("ASB_PROD") ?? string.Empty;
+            string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
+            var docService = new NetDocumentService(DBconnectionString, netDocsEnvName);
+            var uploadRequest = await GetNetDocumentMetadataAsync(claimID, trustRefID);
+            using var tempMemoryStream = new MemoryStream();
+            await releaseDocument.CopyToAsync(tempMemoryStream);
 
-        tempMemoryStream.Position = 0;
+            tempMemoryStream.Position = 0;
 
-        uploadRequest.UpdateDestination("Bankruptcy", nDFolder, "pdf", "NiranjanReddy", DocName: docName);
-        var netDocStatus = await docService.UploadDocumentAsync(tempMemoryStream, uploadRequest);
+            uploadRequest.UpdateDestination("Bankruptcy", nDFolder, "pdf", "NiranjanReddy",  docName);
+            var netDocStatus = await docService.UploadDocumentAsync(tempMemoryStream, uploadRequest);
 
-        return netDocStatus?.DocumentId ?? string.Empty;
+            return netDocStatus?.DocumentId ?? string.Empty;
+        }
+        catch(Exception)
+        {
+            throw;
+        }
     }
 
     public static async Task<IEnumerable<EnvelopeOfferClientInfo>> GetEnvelopeOfferInfo(string EnvelopeID)
