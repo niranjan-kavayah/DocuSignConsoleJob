@@ -332,6 +332,7 @@ static async Task SyncDataBaseEnvelope(Envelope envelope)
             string netDocsEnvName = configuration["NetDocDBConnSettings:EnvironmentName"] ?? string.Empty;
             var docService = new NetDocumentService(DBconnectionString, netDocsEnvName);
             var uploadRequest = await GetNetDocumentMetadataAsync(claimID, trustRefID);
+            uploadRequest.DocumentStatus = "signed received from client";
             using var tempMemoryStream = new MemoryStream();
             await releaseDocument.CopyToAsync(tempMemoryStream);
 
